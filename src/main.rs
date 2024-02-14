@@ -452,6 +452,7 @@ fn main() {
     for i in 0..(N_B * 4) {
         assert_eq!(plain_text[i], plain_block[i]);
     }
+    println!("Test passed");
 }
 
 
