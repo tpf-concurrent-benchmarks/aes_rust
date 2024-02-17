@@ -8,6 +8,7 @@ impl<const R: usize, const C: usize> Matrix<R, C> {
         Self { data: [[0; C]; R] }
     }
 
+    #[cfg(test)]
     pub fn new_from_data(data: [[u8; C]; R]) -> Self {
         Self { data }
     }

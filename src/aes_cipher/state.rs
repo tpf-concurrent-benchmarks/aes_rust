@@ -18,10 +18,12 @@ impl State {
         }
     }
 
+    #[cfg(test)]
     pub fn new_from_matrix(data: Matrix<4, N_B>) -> Self {
         Self { data }
     }
 
+    #[cfg(test)]
     pub fn new_from_data(data: [[u8; N_B]; 4]) -> Self {
         let matrix = Matrix::new_from_data(data);
         Self::new_from_matrix(matrix)

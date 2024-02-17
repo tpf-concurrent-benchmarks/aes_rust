@@ -5,4 +5,4 @@ WORKDIR /opt/app
 COPY Cargo.toml Cargo.lock ./
 COPY src /opt/app/src
 
-CMD ["cargo", "run"]
+CMD ["cargo", "test"]
