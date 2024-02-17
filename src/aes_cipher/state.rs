@@ -2,10 +2,10 @@
 Intermediate Cipher result that can be pictured as a rectangular array
 of bytes, having four rows and Nb columns.
  */
+use super::constants::{INV_S_BOX, S_BOX};
+use super::N_B;
 use crate::aes_cipher::Word;
 use crate::matrix::Matrix;
-use super::N_B;
-use super::constants::{S_BOX, INV_S_BOX};
 
 pub struct State {
     pub data: Matrix<4, N_B>,
@@ -13,7 +13,9 @@ pub struct State {
 
 impl State {
     pub fn new() -> Self {
-        Self { data: Matrix::new() }
+        Self {
+            data: Matrix::new(),
+        }
     }
 
     pub fn new_from_matrix(data: Matrix<4, N_B>) -> Self {
@@ -21,7 +23,7 @@ impl State {
     }
 
     pub fn new_from_data(data: [[u8; N_B]; 4]) -> Self {
-        let mut matrix = Matrix::new_from_data(data);
+        let matrix = Matrix::new_from_data(data);
         Self::new_from_matrix(matrix)
     }
 
@@ -32,7 +34,8 @@ impl State {
                 data_in[4 * i],
                 data_in[4 * i + 1],
                 data_in[4 * i + 2],
-                data_in[4 * i + 3]];
+                data_in[4 * i + 3],
+            ];
             state.data.set_col(i, col);
         }
         state
@@ -105,10 +108,22 @@ impl State {
         for i in 0..N_B {
             let col = self.data.get_col(i);
             let new_col = [
-                Self::galois_mul(col[0], 14) ^ Self::galois_mul(col[1], 11) ^ Self::galois_mul(col[2], 13) ^ Self::galois_mul(col[3], 9),
-                Self::galois_mul(col[0], 9) ^ Self::galois_mul(col[1], 14) ^ Self::galois_mul(col[2], 11) ^ Self::galois_mul(col[3], 13),
-                Self::galois_mul(col[0], 13) ^ Self::galois_mul(col[1], 9) ^ Self::galois_mul(col[2], 14) ^ Self::galois_mul(col[3], 11),
-                Self::galois_mul(col[0], 11) ^ Self::galois_mul(col[1], 13) ^ Self::galois_mul(col[2], 9) ^ Self::galois_mul(col[3], 14),
+                Self::galois_mul(col[0], 14)
+                    ^ Self::galois_mul(col[1], 11)
+                    ^ Self::galois_mul(col[2], 13)
+                    ^ Self::galois_mul(col[3], 9),
+                Self::galois_mul(col[0], 9)
+                    ^ Self::galois_mul(col[1], 14)
+                    ^ Self::galois_mul(col[2], 11)
+                    ^ Self::galois_mul(col[3], 13),
+                Self::galois_mul(col[0], 13)
+                    ^ Self::galois_mul(col[1], 9)
+                    ^ Self::galois_mul(col[2], 14)
+                    ^ Self::galois_mul(col[3], 11),
+                Self::galois_mul(col[0], 11)
+                    ^ Self::galois_mul(col[1], 13)
+                    ^ Self::galois_mul(col[2], 9)
+                    ^ Self::galois_mul(col[3], 14),
             ];
             self.data.set_col(i, new_col);
         }
@@ -123,7 +138,12 @@ impl State {
             let col = self.data.get_col(i);
             let word = round_key[i];
             let word_bytes = word.to_be_bytes();
-            let new_col = [col[0] ^ word_bytes[0], col[1] ^ word_bytes[1], col[2] ^ word_bytes[2], col[3] ^ word_bytes[3]];
+            let new_col = [
+                col[0] ^ word_bytes[0],
+                col[1] ^ word_bytes[1],
+                col[2] ^ word_bytes[2],
+                col[3] ^ word_bytes[3],
+            ];
             self.data.set_col(i, new_col);
         });
     }

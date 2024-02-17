@@ -8,7 +8,6 @@ impl<const R: usize, const C: usize> Matrix<R, C> {
         Self { data: [[0; C]; R] }
     }
 
-    #[cfg(test)]
     pub fn new_from_data(data: [[u8; C]; R]) -> Self {
         Self { data }
     }
@@ -34,10 +33,9 @@ impl<const R: usize, const C: usize> Matrix<R, C> {
         self.data[row]
     }
 
-    pub fn get_cols(&self) -> impl Iterator<Item=[u8; R]> + '_ {
+    pub fn get_cols(&self) -> impl Iterator<Item = [u8; R]> + '_ {
         (0..C).map(move |i| self.get_col(i))
     }
-
 
     pub fn get_col(&self, col: usize) -> [u8; R] {
         let mut result = [0; R];
