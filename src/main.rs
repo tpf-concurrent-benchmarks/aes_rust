@@ -5,6 +5,7 @@ mod measured_aes_cipher;
 mod statsd_metrics_logger;
 mod noop_metrics_logger;
 
+use rayon::prelude::*;
 use crate::aes_cipher::{AESCipher, N_B};
 use crate::measured_aes_cipher::MeasuredAESCipher;
 use crate::noop_metrics_logger::NoOpMetricsLogger;
@@ -42,24 +43,28 @@ fn main() {
         let elapsed_time = start_time.elapsed().as_secs_f64();
         println!("Elapsed time: {}s", elapsed_time);
         logger.gauge("completion_time", elapsed_time);
-
     } else {
         let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
         let measured_cipher = MeasuredAESCipher::new(cipher, &logger);
-        
+
         let result = apply_operations_and_compare(&measured_cipher, blocks);
         assert!(result);
+
         println!("Test passed (prod)");
+
+        let elapsed_time = start_time.elapsed().as_secs_f64();
+        println!("Elapsed time: {}s", elapsed_time);
+        logger.gauge("completion_time", elapsed_time);
     }
 }
 
 fn apply_operations_and_compare<T>(cipher: &MeasuredAESCipher<T>, blocks: Vec<[u8; 4 * N_B]>) -> bool
     where
-        T: metrics_logger::MetricsLogger,
+        T: MetricsLogger + Sync,
 {
-    let ciphered_blocks = blocks.iter().map(|block| cipher.cipher_block(*block)).collect::<Vec<_>>();
+    let ciphered_blocks = blocks.par_iter().map(|block| cipher.cipher_block(block)).collect::<Vec<_>>();
 
-    let deciphered_blocks = ciphered_blocks.iter().map(|block| cipher.inv_cipher_block(*block)).collect::<Vec<_>>();
+    let deciphered_blocks = ciphered_blocks.par_iter().map(|block| cipher.inv_cipher_block(block)).collect::<Vec<_>>();
 
     for (original_block, deciphered_block) in blocks.iter().zip(deciphered_blocks.iter()) {
         for i in 0..(N_B * 4) {

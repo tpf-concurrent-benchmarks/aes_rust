@@ -29,7 +29,7 @@ impl State {
         Self::new_from_matrix(matrix)
     }
 
-    pub fn new_from_data_in(data_in: [u8; 4 * N_B]) -> Self {
+    pub fn new_from_data_in(data_in: &[u8; 4 * N_B]) -> Self {
         let mut state = State::new();
         for i in 0..N_B {
             let col = [

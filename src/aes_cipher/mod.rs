@@ -43,7 +43,7 @@ impl AESCipher {
         Self::new(cipher_key)
     }
 
-    pub fn cipher_block(&self, data_in: [u8; 4 * N_B]) -> [u8; 4 * N_B] {
+    pub fn cipher_block(&self, data_in: &[u8; 4 * N_B]) -> [u8; 4 * N_B] {
         let mut data_out = [0; 4 * N_B];
 
         let mut state = State::new_from_data_in(data_in);
@@ -74,7 +74,7 @@ impl AESCipher {
     }
 
     #[allow(dead_code)]
-    fn slow_inv_cipher_block(&self, data_in: [u8; 4 * N_B]) -> [u8; 4 * N_B] {
+    fn slow_inv_cipher_block(&self, data_in: &[u8; 4 * N_B]) -> [u8; 4 * N_B] {
         let mut data_out = [0; 4 * N_B];
         let mut state = State::new_from_data_in(data_in);
 
@@ -103,7 +103,7 @@ impl AESCipher {
         data_out
     }
 
-    pub fn inv_cipher_block(&self, data_in: [u8; 4 * N_B]) -> [u8; 4 * N_B] {
+    pub fn inv_cipher_block(&self, data_in: &[u8; 4 * N_B]) -> [u8; 4 * N_B] {
         let mut data_out = [0; 4 * N_B];
 
         let mut state = State::new_from_data_in(data_in);
