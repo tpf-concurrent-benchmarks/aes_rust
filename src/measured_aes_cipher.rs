@@ -1,19 +1,19 @@
 use crate::aes_cipher::{AESCipher, N_B};
 use crate::metrics_logger::MetricsLogger;
 
-pub struct MeasuredAESCipher<T>
+pub struct MeasuredAESCipher<'a, T>
     where
         T: MetricsLogger,
 {
     cipher: AESCipher,
-    logger: T,
+    logger: &'a T
 }
 
-impl<T> MeasuredAESCipher<T>
+impl<'a, T> MeasuredAESCipher<'a, T>
     where
         T: MetricsLogger,
 {
-    pub fn new(cipher: AESCipher, logger: T) -> Self {
+    pub fn new(cipher: AESCipher, logger: &'a T) -> Self {
         MeasuredAESCipher { cipher, logger }
     }
 

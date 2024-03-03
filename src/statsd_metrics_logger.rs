@@ -32,7 +32,6 @@ impl MetricsLogger for StatsDMetricsLogger {
         where
             F: Fn() -> T,
     {
-        println!("Running and measuring {}", metric);
         self.statsd_client.time(metric, f)
     }
 }
