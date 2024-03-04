@@ -1,22 +1,17 @@
 pub mod aes_cipher;
 mod metrics_logger;
 mod matrix;
-mod measured_aes_cipher;
 mod statsd_metrics_logger;
-mod noop_metrics_logger;
 
 use rayon::prelude::*;
 use crate::aes_cipher::{AESCipher, N_B};
-use crate::measured_aes_cipher::MeasuredAESCipher;
-use crate::noop_metrics_logger::NoOpMetricsLogger;
+use crate::metrics_logger::MetricsLogger;
 use crate::statsd_metrics_logger::StatsDMetricsLogger;
-
-use metrics_logger::MetricsLogger;
 
 fn main() {
     std::thread::sleep(std::time::Duration::from_secs(10));
 
-    let blocks_to_encrypt = 1000000;
+    let blocks_to_encrypt = 10000;
     let blocks = (0..blocks_to_encrypt).map(|_| {
         let mut block = [0u8; 4 * N_B];
         for i in 0..(4 * N_B) {
@@ -31,36 +26,25 @@ fn main() {
 
     let start_time = std::time::Instant::now();
 
-    if std::env::var("LOCAL").is_ok() {
-        let logger = NoOpMetricsLogger::new();
-        let measured_cipher = MeasuredAESCipher::new(cipher, &logger);
+    let result = apply_operations_and_compare(&cipher, blocks);
 
-        let result = apply_operations_and_compare(&measured_cipher, blocks);
-        assert!(result);
+    let elapsed_time = start_time.elapsed().as_secs_f64();
 
-        println!("Test passed (local)");
+    assert!(result);
 
-        let elapsed_time = start_time.elapsed().as_secs_f64();
-        println!("Elapsed time: {}s", elapsed_time);
-        logger.gauge("completion_time", elapsed_time);
-    } else {
-        let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
-        let measured_cipher = MeasuredAESCipher::new(cipher, &logger);
+    println!("Test passed");
+    println!("Elapsed time: {}s", elapsed_time);
 
-        let result = apply_operations_and_compare(&measured_cipher, blocks);
-        assert!(result);
-
-        println!("Test passed (prod)");
-
-        let elapsed_time = start_time.elapsed().as_secs_f64();
-        println!("Elapsed time: {}s", elapsed_time);
-        logger.gauge("completion_time", elapsed_time);
+    match std::env::var("LOCAL").unwrap_or("false".to_string()).as_str() {
+        "true" => {
+            let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
+            logger.gauge("completion_time", elapsed_time);
+        }
+        _ => {}
     }
 }
 
-fn apply_operations_and_compare<T>(cipher: &MeasuredAESCipher<T>, blocks: Vec<[u8; 4 * N_B]>) -> bool
-    where
-        T: MetricsLogger + Sync,
+fn apply_operations_and_compare(cipher: &AESCipher, blocks: Vec<[u8; 4 * N_B]>) -> bool
 {
     let ciphered_blocks = blocks.par_iter().map(|block| cipher.cipher_block(block)).collect::<Vec<_>>();
 
