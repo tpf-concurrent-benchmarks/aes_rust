@@ -5,15 +5,17 @@ pub struct ChunkReader<T>
 {
     input: T,
     chunk_size: usize,
+    with_padding: bool,
 }
 
 impl<T> ChunkReader<T>
     where T: Read
 {
-    pub fn new(input: T, chunk_size: usize) -> Self {
+    pub fn new(input: T, chunk_size: usize, with_padding: bool) -> Self {
         ChunkReader {
             input,
             chunk_size,
+            with_padding,
         }
     }
 
@@ -44,7 +46,9 @@ impl<T> ChunkReader<T>
         while bytes_read < self.chunk_size {
             match self.input.read(&mut buffer[bytes_read..]) {
                 Ok(0) => {
-                    self.apply_null_padding(bytes_read, buffer);
+                    if self.with_padding {
+                        self.apply_null_padding(bytes_read, buffer);
+                    }
                     return Ok(bytes_read);
                 }
                 Ok(n) => bytes_read += n,
@@ -68,7 +72,7 @@ mod tests {
     #[test]
     fn test_read_one_chunk_exact_size() {
         let input = Cursor::new(vec![54u8; 16]);
-        let mut reader = ChunkReader::new(input, 16);
+        let mut reader = ChunkReader::new(input, 16, true);
         let mut buffer = [[0u8; 16]; 1];
         let chunks_filled = reader.read_chunks(1, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 1);
@@ -78,7 +82,7 @@ mod tests {
     #[test]
     fn test_read_one_chunk_partial_size() {
         let input = Cursor::new(vec![54u8; 8]);
-        let mut reader = ChunkReader::new(input, 16);
+        let mut reader = ChunkReader::new(input, 16, true);
         let mut buffer = [[0u8; 16]; 1];
         let chunks_filled = reader.read_chunks(1, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 1);
@@ -92,7 +96,7 @@ mod tests {
         (16..32).for_each(|i| vec[i] = 76u8);
 
         let input = Cursor::new(vec);
-        let mut reader = ChunkReader::new(input, 16);
+        let mut reader = ChunkReader::new(input, 16, true);
         let mut buffer = [[0u8; 16]; 2];
         let chunks_filled = reader.read_chunks(2, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 2);
@@ -108,7 +112,7 @@ mod tests {
         (16..24).for_each(|i| vec[i] = 98u8);
 
         let input = Cursor::new(vec);
-        let mut reader = ChunkReader::new(input, 16);
+        let mut reader = ChunkReader::new(input, 16, true);
         let mut buffer = [[0u8; 16]; 2];
         let chunks_filled = reader.read_chunks(2, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 2);
@@ -119,7 +123,7 @@ mod tests {
     #[test]
     fn test_read_more_than_available() {
         let input = Cursor::new(vec![54u8; 16]);
-        let mut reader = ChunkReader::new(input, 16);
+        let mut reader = ChunkReader::new(input, 16, true);
         let mut buffer = [[0u8; 16]; 2];
         let chunks_filled = reader.read_chunks(2, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 1);
