@@ -4,7 +4,7 @@ of bytes, having four rows and Nb columns.
  */
 use super::constants::{INV_S_BOX, S_BOX};
 use super::N_B;
-use crate::aes_cipher::Word;
+use crate::aes_block_cipher::Word;
 use crate::matrix::Matrix;
 
 pub struct State {

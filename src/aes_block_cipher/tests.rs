@@ -176,7 +176,7 @@ fn test_cipher() {
         0x32,
     ];
 
-    let cipher = AESCipher::new(cipher_key);
+    let cipher = AESBlockCipher::new(cipher_key);
 
     let cipher_bytes = cipher.cipher_block(&plain_bytes);
 
@@ -199,7 +199,7 @@ fn test_cipher_using_new_u128() {
         0x32,
     ];
 
-    let cipher = AESCipher::new_u128(cipher_key);
+    let cipher = AESBlockCipher::new_u128(cipher_key);
 
     let block = cipher.cipher_block(&plain_bytes);
 
@@ -248,7 +248,7 @@ fn test_inv_cipher() {
         0x32,
     ];
 
-    let cipher = AESCipher::new(cipher_key);
+    let cipher = AESBlockCipher::new(cipher_key);
 
     let plain_text = cipher.inv_cipher_block(&cipher_bytes);
 

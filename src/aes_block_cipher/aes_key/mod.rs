@@ -4,9 +4,9 @@ mod tests;
 /*
 Represents both the expanded key (direct) and the inverse expanded key
  */
-use crate::aes_cipher::constants::{R_CON, S_BOX};
-use crate::aes_cipher::state::State;
-use crate::aes_cipher::{Word, N_B, N_K, N_R};
+use crate::aes_block_cipher::constants::{R_CON, S_BOX};
+use crate::aes_block_cipher::state::State;
+use crate::aes_block_cipher::{Word, N_B, N_K, N_R};
 
 pub struct AESKey {
     pub data: [Word; N_B * (N_R + 1)],

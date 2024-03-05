@@ -1,4 +1,4 @@
-pub mod aes_cipher;
+pub mod aes_block_cipher;
 mod metrics_logger;
 mod matrix;
 mod statsd_metrics_logger;
@@ -8,7 +8,7 @@ mod chunk_writer;
 
 use std::io::Read;
 use rayon::prelude::*;
-use crate::aes_cipher::{AESCipher, N_B};
+use crate::aes_block_cipher::{AESBlockCipher, N_B};
 use crate::metrics_logger::MetricsLogger;
 use crate::statsd_metrics_logger::StatsDMetricsLogger;
 
@@ -17,7 +17,7 @@ const BUFFER_SIZE: usize = 100;
 fn main() {
     let cipher_key: u128 = 0x2b7e151628aed2a6abf7158809cf4f3c;
 
-    let cipher = AESCipher::new_u128(cipher_key);
+    let cipher = AESBlockCipher::new_u128(cipher_key);
 
     let start_time = std::time::Instant::now();
 
@@ -60,15 +60,15 @@ fn main() {
     }
 }
 
-fn encrypt_chunks(cipher: &AESCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8; 4 * N_B]> {
+fn encrypt_chunks(cipher: &AESBlockCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8; 4 * N_B]> {
     chunks.par_iter().map(|block| cipher.cipher_block(block)).collect::<Vec<_>>()
 }
 
-fn decrypt_chunks(cipher: &AESCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8; 4 * N_B]> {
+fn decrypt_chunks(cipher: &AESBlockCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8; 4 * N_B]> {
     chunks.par_iter().map(|block| cipher.inv_cipher_block(block)).collect::<Vec<_>>()
 }
 
-fn encrypt_file(cipher: &AESCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
+fn encrypt_file(cipher: &AESBlockCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
     let input = std::fs::File::open(input_file)?;
     let mut reader = chunk_reader::ChunkReader::new(input, 16, true);
 
@@ -89,7 +89,7 @@ fn encrypt_file(cipher: &AESCipher, input_file: &str, output_file: &str) -> std:
     Ok(())
 }
 
-fn decrypt_file(cipher: &AESCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
+fn decrypt_file(cipher: &AESBlockCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
     let input = std::fs::File::open(input_file)?;
     let mut reader = chunk_reader::ChunkReader::new(input, 16, false);
 

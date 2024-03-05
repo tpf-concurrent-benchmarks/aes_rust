@@ -20,12 +20,12 @@ pub const N_R: usize = 10;
 
 pub type Word = u32;
 
-pub struct AESCipher {
+pub struct AESBlockCipher {
     expanded_key: AESKey,
     inv_expanded_key: AESKey,
 }
 
-impl AESCipher {
+impl AESBlockCipher {
     pub fn new(cipher_key: [u8; 4 * N_B]) -> Self {
         let expanded_key = AESKey::new_direct(cipher_key);
         let inv_expanded_key = AESKey::new_inverse(cipher_key);
