@@ -3,6 +3,8 @@ mod metrics_logger;
 mod matrix;
 mod statsd_metrics_logger;
 
+mod chunk_reader;
+
 use rayon::prelude::*;
 use crate::aes_cipher::{AESCipher, N_B};
 use crate::metrics_logger::MetricsLogger;
@@ -14,9 +16,7 @@ fn main() {
     let blocks_to_encrypt = 10000;
     let blocks = (0..blocks_to_encrypt).map(|_| {
         let mut block = [0u8; 4 * N_B];
-        for i in 0..(4 * N_B) {
-            block[i] = rand::random();
-        }
+        (0..(4 * N_B)).for_each(|i| block[i] = rand::random());
         block
     }).collect::<Vec<_>>();
 
@@ -35,12 +35,9 @@ fn main() {
     println!("Test passed");
     println!("Elapsed time: {}s", elapsed_time);
 
-    match std::env::var("LOCAL").unwrap_or("false".to_string()).as_str() {
-        "true" => {
-            let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
-            logger.gauge("completion_time", elapsed_time);
-        }
-        _ => {}
+    if std::env::var("LOCAL").unwrap_or("false".to_string()).as_str() == "true" {
+        let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
+        logger.gauge("completion_time", elapsed_time);
     }
 }
 

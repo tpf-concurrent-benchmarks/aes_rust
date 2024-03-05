@@ -106,7 +106,7 @@ fn test_get_state_from_data_in() {
         [0xe0, 0x37, 0x07, 0x34],
     ]);
 
-    let state = State::new_from_data_in(data_in);
+    let state = State::new_from_data_in(&data_in);
 
     for i in 0..4 {
         assert_eq!(state.data.get_row(i), expected_state.data.get_row(i));
@@ -178,7 +178,7 @@ fn test_cipher() {
 
     let cipher = AESCipher::new(cipher_key);
 
-    let cipher_bytes = cipher.cipher_block(plain_bytes);
+    let cipher_bytes = cipher.cipher_block(&plain_bytes);
 
     for i in 0..(N_B * 4) {
         assert_eq!(cipher_bytes[i], expected_cipher_bytes[i]);
@@ -201,7 +201,7 @@ fn test_cipher_using_new_u128() {
 
     let cipher = AESCipher::new_u128(cipher_key);
 
-    let block = cipher.cipher_block(plain_bytes);
+    let block = cipher.cipher_block(&plain_bytes);
 
     for i in 0..(N_B * 4) {
         assert_eq!(block[i], expected_cipher_bytes[i]);
@@ -250,7 +250,7 @@ fn test_inv_cipher() {
 
     let cipher = AESCipher::new(cipher_key);
 
-    let plain_text = cipher.inv_cipher_block(cipher_bytes);
+    let plain_text = cipher.inv_cipher_block(&cipher_bytes);
 
     for i in 0..(N_B * 4) {
         assert_eq!(plain_text[i], expected_plain_text[i]);
