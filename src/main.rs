@@ -49,7 +49,7 @@ fn encrypt_file(cipher: &AESCipher, input_file: &str, output_file: &str) -> std:
     let mut reader = chunk_reader::ChunkReader::new(input, 16);
 
     let output = std::fs::File::create(output_file)?;
-    let mut writer = chunk_writer::ChunkWriter::new(output, 16);
+    let mut writer = chunk_writer::ChunkWriter::new(output);
 
     let mut buffer = [[0u8; 16]; BUFFER_SIZE];
 

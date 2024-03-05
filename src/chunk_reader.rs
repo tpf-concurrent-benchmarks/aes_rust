@@ -27,7 +27,7 @@ impl<T> ChunkReader<T>
                 Ok(0) => return Ok(chunks_filled),
                 Ok(n) => {
                     chunks_filled += 1;
-                    if n < 16 {
+                    if n < self.chunk_size {
                         return Ok(chunks_filled);
                     }
                 }
@@ -41,7 +41,7 @@ impl<T> ChunkReader<T>
     /// Returns the number of bytes read, or an error if the read operation fails.
     fn fill_chunk(&mut self, buffer: &mut [u8; 16]) -> std::io::Result<usize> {
         let mut bytes_read = 0;
-        while bytes_read < 16 {
+        while bytes_read < self.chunk_size {
             match self.input.read(&mut buffer[bytes_read..]) {
                 Ok(0) => {
                     self.apply_null_padding(bytes_read, buffer);
@@ -55,7 +55,7 @@ impl<T> ChunkReader<T>
     }
 
     fn apply_null_padding(&self, from: usize, buffer: &mut [u8; 16]) {
-        (from..16).for_each(|i| buffer[i] = 0);
+        (from..self.chunk_size).for_each(|i| buffer[i] = 0);
     }
 }
 

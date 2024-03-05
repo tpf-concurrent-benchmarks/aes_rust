@@ -9,7 +9,7 @@ pub struct ChunkWriter<T>
 impl<T> ChunkWriter<T>
     where T: Write
 {
-    pub fn new(output: T, chunk_size: usize) -> Self {
+    pub fn new(output: T) -> Self {
         ChunkWriter {
             output,
         }
@@ -39,5 +39,13 @@ impl<T> ChunkWriter<T>
     fn write_chunk_without_padding(&mut self, chunk: &[u8; 16]) -> std::io::Result<()> {
         let padding_pos = chunk.iter().position(|&byte| byte == 0).unwrap_or(16);
         self.output.write_all(&chunk[..padding_pos])
+    }
+}
+
+impl<T> Drop for ChunkWriter<T>
+    where T: Write
+{
+    fn drop(&mut self) {
+        self.output.flush().expect("Failed to flush the output");
     }
 }
