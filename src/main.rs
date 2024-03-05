@@ -4,33 +4,32 @@ mod matrix;
 mod statsd_metrics_logger;
 
 mod chunk_reader;
+mod chunk_writer;
 
 use rayon::prelude::*;
 use crate::aes_cipher::{AESCipher, N_B};
 use crate::metrics_logger::MetricsLogger;
 use crate::statsd_metrics_logger::StatsDMetricsLogger;
 
+const BUFFER_SIZE: usize = 100;
+
 fn main() {
-    std::thread::sleep(std::time::Duration::from_secs(10));
-
-    let blocks_to_encrypt = 10000;
-    let blocks = (0..blocks_to_encrypt).map(|_| {
-        let mut block = [0u8; 4 * N_B];
-        (0..(4 * N_B)).for_each(|i| block[i] = rand::random());
-        block
-    }).collect::<Vec<_>>();
-
     let cipher_key: u128 = 0x2b7e151628aed2a6abf7158809cf4f3c;
 
     let cipher = AESCipher::new_u128(cipher_key);
 
     let start_time = std::time::Instant::now();
 
-    let result = apply_operations_and_compare(&cipher, blocks);
+    match encrypt_file(&cipher, "input.txt", "output.txt") {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Error while encrypting file: {}", e);
+            std::process::exit(1);
+        }
+    }
 
     let elapsed_time = start_time.elapsed().as_secs_f64();
 
-    assert!(result);
 
     println!("Test passed");
     println!("Elapsed time: {}s", elapsed_time);
@@ -41,18 +40,28 @@ fn main() {
     }
 }
 
-fn apply_operations_and_compare(cipher: &AESCipher, blocks: Vec<[u8; 4 * N_B]>) -> bool
-{
-    let ciphered_blocks = blocks.par_iter().map(|block| cipher.cipher_block(block)).collect::<Vec<_>>();
-
-    let deciphered_blocks = ciphered_blocks.par_iter().map(|block| cipher.inv_cipher_block(block)).collect::<Vec<_>>();
-
-    for (original_block, deciphered_block) in blocks.iter().zip(deciphered_blocks.iter()) {
-        for i in 0..(N_B * 4) {
-            if original_block[i] != deciphered_block[i] {
-                return false;
-            }
-        }
-    }
-    true
+fn encrypt_chunks(cipher: &AESCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8; 4 * N_B]> {
+    chunks.par_iter().map(|block| cipher.cipher_block(block)).collect::<Vec<_>>()
 }
+
+fn encrypt_file(cipher: &AESCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
+    let input = std::fs::File::open(input_file)?;
+    let mut reader = chunk_reader::ChunkReader::new(input, 16);
+
+    let output = std::fs::File::create(output_file)?;
+    let mut writer = chunk_writer::ChunkWriter::new(output, 16);
+
+    let mut buffer = [[0u8; 16]; BUFFER_SIZE];
+
+    loop {
+        let chunks_filled = reader.read_chunks(BUFFER_SIZE, &mut buffer).unwrap();
+        if chunks_filled == 0 {
+            break;
+        }
+        let ciphered_chunks = encrypt_chunks(cipher, &buffer);
+        writer.write_chunks(false, &ciphered_chunks).unwrap();
+    }
+
+    Ok(())
+}
+
