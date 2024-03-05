@@ -4,11 +4,8 @@ mod utils;
 
 mod aes_cipher;
 
-use crate::aes_block_cipher::{AESBlockCipher, N_B};
 use crate::aes_cipher::AESCipher;
 use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
-use crate::utils::{ChunkReader, ChunkWriter};
-use rayon::prelude::*;
 use std::io::Read;
 
 const BUFFER_SIZE: usize = 100;
