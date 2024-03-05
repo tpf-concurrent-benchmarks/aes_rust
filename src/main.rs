@@ -1,14 +1,13 @@
 pub mod aes_block_cipher;
 mod metrics_logger;
-mod matrix;
+mod utils;
 
-mod chunk_reader;
-mod chunk_writer;
 
 use std::io::Read;
 use rayon::prelude::*;
 use crate::aes_block_cipher::{AESBlockCipher, N_B};
 use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
+use crate::utils::{ChunkReader, ChunkWriter};
 
 const BUFFER_SIZE: usize = 100;
 
@@ -68,10 +67,10 @@ fn decrypt_chunks(cipher: &AESBlockCipher, chunks: &[[u8; 4 * N_B]]) -> Vec<[u8;
 
 fn encrypt_file(cipher: &AESBlockCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
     let input = std::fs::File::open(input_file)?;
-    let mut reader = chunk_reader::ChunkReader::new(input, 16, true);
+    let mut reader = ChunkReader::new(input, 16, true);
 
     let output = std::fs::File::create(output_file)?;
-    let mut writer = chunk_writer::ChunkWriter::new(output);
+    let mut writer = ChunkWriter::new(output);
 
     let mut buffer = [[0u8; 16]; BUFFER_SIZE];
 
@@ -89,10 +88,10 @@ fn encrypt_file(cipher: &AESBlockCipher, input_file: &str, output_file: &str) ->
 
 fn decrypt_file(cipher: &AESBlockCipher, input_file: &str, output_file: &str) -> std::io::Result<()> {
     let input = std::fs::File::open(input_file)?;
-    let mut reader = chunk_reader::ChunkReader::new(input, 16, false);
+    let mut reader = ChunkReader::new(input, 16, false);
 
     let output = std::fs::File::create(output_file)?;
-    let mut writer = chunk_writer::ChunkWriter::new(output);
+    let mut writer = ChunkWriter::new(output);
 
     let mut buffer = [[0u8; 16]; BUFFER_SIZE];
 
