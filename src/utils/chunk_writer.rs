@@ -1,24 +1,28 @@
 use std::io::Write;
 
 pub struct ChunkWriter<T>
-    where T: Write
+where
+    T: Write,
 {
     output: T,
 }
 
 impl<T> ChunkWriter<T>
-    where T: Write
+where
+    T: Write,
 {
     pub fn new(output: T) -> Self {
-        ChunkWriter {
-            output,
-        }
+        ChunkWriter { output }
     }
 
     /// Write the chunks to the output, removing any null padding.
     /// Return `Ok(())` if the write operation is successful, or an error if it fails to write
     /// any of the chunks.
-    pub fn write_chunks(&mut self, remove_padding: bool, chunks: &[[u8; 16]]) -> std::io::Result<()> {
+    pub fn write_chunks(
+        &mut self,
+        remove_padding: bool,
+        chunks: &[[u8; 16]],
+    ) -> std::io::Result<()> {
         for chunk in chunks {
             self.write_chunk(remove_padding, chunk)?;
         }
@@ -43,7 +47,8 @@ impl<T> ChunkWriter<T>
 }
 
 impl<T> Drop for ChunkWriter<T>
-    where T: Write
+where
+    T: Write,
 {
     fn drop(&mut self) {
         self.output.flush().expect("Failed to flush the output");

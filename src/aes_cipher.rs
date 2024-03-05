@@ -29,9 +29,9 @@ impl AESCipher {
     }
 
     pub fn cipher<R, W>(&self, input: R, output: W) -> Result<(), std::io::Error>
-        where
-            R: std::io::Read,
-            W: std::io::Write,
+    where
+        R: std::io::Read,
+        W: std::io::Write,
     {
         let mut chunk_reader = ChunkReader::new(input, 4 * N_B, true);
         let mut chunk_writer = ChunkWriter::new(output);
@@ -50,9 +50,9 @@ impl AESCipher {
     }
 
     pub fn decipher<R, W>(&self, input: R, output: W) -> Result<(), std::io::Error>
-        where
-            R: std::io::Read,
-            W: std::io::Write,
+    where
+        R: std::io::Read,
+        W: std::io::Write,
     {
         let mut chunk_reader = ChunkReader::new(input, 4 * N_B, false);
         let mut chunk_writer = ChunkWriter::new(output);

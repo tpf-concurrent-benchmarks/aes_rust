@@ -1,7 +1,7 @@
 extern crate statsd;
 
-use std::net::ToSocketAddrs;
 use super::MetricsLogger;
+use std::net::ToSocketAddrs;
 
 pub struct StatsDMetricsLogger {
     statsd_client: statsd::Client,
@@ -9,7 +9,8 @@ pub struct StatsDMetricsLogger {
 
 impl StatsDMetricsLogger {
     pub fn new<T: ToSocketAddrs>(host: T, prefix: &str) -> Self {
-        let statsd_client = statsd::Client::new(host, prefix).expect("Failed to create statsd client");
+        let statsd_client =
+            statsd::Client::new(host, prefix).expect("Failed to create statsd client");
 
         StatsDMetricsLogger { statsd_client }
     }
@@ -29,8 +30,8 @@ impl MetricsLogger for StatsDMetricsLogger {
     }
 
     fn run_and_measure<F, T>(&self, metric: &str, f: F) -> T
-        where
-            F: Fn() -> T,
+    where
+        F: Fn() -> T,
     {
         self.statsd_client.time(metric, f)
     }

@@ -1,7 +1,8 @@
 use std::io::Read;
 
 pub struct ChunkReader<T>
-    where T: Read
+where
+    T: Read,
 {
     input: T,
     chunk_size: usize,
@@ -9,7 +10,8 @@ pub struct ChunkReader<T>
 }
 
 impl<T> ChunkReader<T>
-    where T: Read
+where
+    T: Read,
 {
     pub fn new(input: T, chunk_size: usize, with_padding: bool) -> Self {
         ChunkReader {
@@ -21,7 +23,11 @@ impl<T> ChunkReader<T>
 
     /// Read at most `chunk_size` bytes from the input, and place them in the buffer.
     /// Return the number of chunks filled.
-    pub fn read_chunks(&mut self, chunks_amount: usize, buffer: &mut [[u8; 16]]) -> std::io::Result<usize> {
+    pub fn read_chunks(
+        &mut self,
+        chunks_amount: usize,
+        buffer: &mut [[u8; 16]],
+    ) -> std::io::Result<usize> {
         let mut chunks_filled = 0;
         while chunks_filled < chunks_amount {
             let chunk = &mut buffer[chunks_filled];
@@ -86,7 +92,13 @@ mod tests {
         let mut buffer = [[0u8; 16]; 1];
         let chunks_filled = reader.read_chunks(1, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 1);
-        assert_eq!(buffer[0], [54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
+        assert_eq!(
+            buffer[0],
+            [
+                54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+                0u8
+            ]
+        );
     }
 
     #[test]
@@ -116,8 +128,20 @@ mod tests {
         let mut buffer = [[0u8; 16]; 2];
         let chunks_filled = reader.read_chunks(2, &mut buffer).unwrap();
         assert_eq!(chunks_filled, 2);
-        assert_eq!(buffer[0], [54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 76u8, 76u8, 76u8, 76u8, 76u8, 76u8, 76u8, 76u8]);
-        assert_eq!(buffer[1], [98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
+        assert_eq!(
+            buffer[0],
+            [
+                54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 54u8, 76u8, 76u8, 76u8, 76u8, 76u8, 76u8,
+                76u8, 76u8
+            ]
+        );
+        assert_eq!(
+            buffer[1],
+            [
+                98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 98u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
+                0u8
+            ]
+        );
     }
 
     #[test]

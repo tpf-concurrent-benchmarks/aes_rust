@@ -5,11 +5,11 @@ mod utils;
 mod aes_cipher;
 
 use crate::aes_block_cipher::{AESBlockCipher, N_B};
+use crate::aes_cipher::AESCipher;
 use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
 use crate::utils::{ChunkReader, ChunkWriter};
 use rayon::prelude::*;
 use std::io::Read;
-use crate::aes_cipher::AESCipher;
 
 const BUFFER_SIZE: usize = 100;
 
@@ -20,7 +20,7 @@ fn main() {
 
     let start_time = std::time::Instant::now();
 
-    match cipher.cipher_file( "test_files/input.txt", "test_files/output.txt") {
+    match cipher.cipher_file("test_files/input.txt", "test_files/output.txt") {
         Ok(_) => {}
         Err(e) => {
             println!("Error while encrypting file: {}", e);

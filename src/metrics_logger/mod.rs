@@ -9,6 +9,6 @@ pub trait MetricsLogger {
     fn gauge(&self, metric: &str, value: f64);
 
     fn run_and_measure<F, T>(&self, metric: &str, f: F) -> T
-        where
-            F: Fn() -> T;
+    where
+        F: Fn() -> T;
 }
