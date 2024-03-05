@@ -1,7 +1,6 @@
 pub mod aes_block_cipher;
 mod metrics_logger;
 mod matrix;
-mod statsd_metrics_logger;
 
 mod chunk_reader;
 mod chunk_writer;
@@ -9,8 +8,7 @@ mod chunk_writer;
 use std::io::Read;
 use rayon::prelude::*;
 use crate::aes_block_cipher::{AESBlockCipher, N_B};
-use crate::metrics_logger::MetricsLogger;
-use crate::statsd_metrics_logger::StatsDMetricsLogger;
+use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
 
 const BUFFER_SIZE: usize = 100;
 

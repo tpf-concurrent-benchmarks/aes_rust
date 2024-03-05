@@ -1,7 +1,7 @@
 extern crate statsd;
 
 use std::net::ToSocketAddrs;
-use crate::metrics_logger::MetricsLogger;
+use super::MetricsLogger;
 
 pub struct StatsDMetricsLogger {
     statsd_client: statsd::Client,

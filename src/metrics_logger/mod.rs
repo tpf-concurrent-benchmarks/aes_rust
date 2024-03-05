@@ -1,3 +1,6 @@
+pub mod statsd_metrics_logger;
+pub use statsd_metrics_logger::StatsDMetricsLogger;
+
 pub trait MetricsLogger {
     fn increment(&self, metric: &str);
 
