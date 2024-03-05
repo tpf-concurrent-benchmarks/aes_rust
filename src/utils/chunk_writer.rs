@@ -5,26 +5,26 @@ where
     T: Write,
 {
     output: T,
+    remove_padding: bool,
 }
 
 impl<T> ChunkWriter<T>
 where
     T: Write,
 {
-    pub fn new(output: T) -> Self {
-        ChunkWriter { output }
+    pub fn new(output: T, remove_padding: bool) -> Self {
+        ChunkWriter {
+            output,
+            remove_padding,
+        }
     }
 
     /// Write the chunks to the output, removing any null padding.
     /// Return `Ok(())` if the write operation is successful, or an error if it fails to write
     /// any of the chunks.
-    pub fn write_chunks(
-        &mut self,
-        remove_padding: bool,
-        chunks: &[[u8; 16]],
-    ) -> std::io::Result<()> {
+    pub fn write_chunks(&mut self, chunks: &[[u8; 16]]) -> std::io::Result<()> {
         for chunk in chunks {
-            self.write_chunk(remove_padding, chunk)?;
+            self.write_chunk(chunk)?;
         }
         Ok(())
     }
@@ -32,8 +32,8 @@ where
     /// Write the chunk to the output, removing any null padding.
     /// Return `Ok(())` if the write operation is successful, or an error if it fails to write
     /// the chunk.
-    fn write_chunk(&mut self, remove_padding: bool, chunk: &[u8; 16]) -> std::io::Result<()> {
-        if remove_padding {
+    fn write_chunk(&mut self, chunk: &[u8; 16]) -> std::io::Result<()> {
+        if self.remove_padding {
             self.write_chunk_without_padding(chunk)
         } else {
             self.output.write_all(chunk)

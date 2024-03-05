@@ -34,7 +34,7 @@ impl AESCipher {
         W: std::io::Write,
     {
         let mut chunk_reader = ChunkReader::new(input, 4 * N_B, true);
-        let mut chunk_writer = ChunkWriter::new(output);
+        let mut chunk_writer = ChunkWriter::new(output, false);
         let mut buffer = [[0u8; 16]; BUFFER_SIZE];
 
         loop {
@@ -43,7 +43,7 @@ impl AESCipher {
                 break;
             }
             let ciphered_chunks = self.cipher_blocks(&buffer[..chunks_filled]);
-            chunk_writer.write_chunks(false, &ciphered_chunks)?;
+            chunk_writer.write_chunks(&ciphered_chunks)?;
         }
 
         Ok(())
@@ -55,7 +55,7 @@ impl AESCipher {
         W: std::io::Write,
     {
         let mut chunk_reader = ChunkReader::new(input, 4 * N_B, false);
-        let mut chunk_writer = ChunkWriter::new(output);
+        let mut chunk_writer = ChunkWriter::new(output, true);
         let mut buffer = [[0u8; 16]; BUFFER_SIZE];
 
         loop {
@@ -64,7 +64,7 @@ impl AESCipher {
                 break;
             }
             let deciphered_chunks = self.decipher_blocks(&buffer[..chunks_filled]);
-            chunk_writer.write_chunks(true, &deciphered_chunks)?;
+            chunk_writer.write_chunks(&deciphered_chunks)?;
         }
 
         Ok(())
