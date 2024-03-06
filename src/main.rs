@@ -6,9 +6,9 @@ mod aes_cipher;
 
 use crate::aes_cipher::AESCipher;
 use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
-use std::io::Read;
+use std::io::{Read, Write};
 
-const BUFFER_SIZE: usize = 100;
+const BUFFER_SIZE: usize = 10000000;
 
 fn main() -> Result<(), String> {
     let n_threads = std::env::var("N_THREADS")
@@ -18,13 +18,21 @@ fn main() -> Result<(), String> {
 
     println!("N_THREADS: {}", n_threads);
 
+    let input_file = "test_files/lorem_ipsum.txt";
+    let output_file = "test_files/output.txt";
+    let decrypted_file = "test_files/decrypted.txt";
+
     let cipher_key: u128 = 0x2b7e151628aed2a6abf7158809cf4f3c;
 
-    let cipher = AESCipher::new(cipher_key, n_threads)?;
+    println!("Cipher key: {:x}", cipher_key);
+
+    std::io::stdout().flush().unwrap();
+
+    let mut cipher = AESCipher::new(cipher_key, n_threads)?;
 
     let start_time = std::time::Instant::now();
 
-    match cipher.cipher_file("test_files/lorem_ipsum.txt", "test_files/output.txt") {
+    match cipher.cipher_file(input_file, output_file) {
         Ok(_) => {}
         Err(e) => {
             println!("Error while encrypting file: {}", e);
@@ -32,7 +40,7 @@ fn main() -> Result<(), String> {
         }
     }
 
-    match cipher.decipher_file("test_files/output.txt", "test_files/decrypted.txt") {
+    match cipher.decipher_file(output_file, decrypted_file) {
         Ok(_) => {}
         Err(e) => {
             println!("Error while decrypting file: {}", e);
@@ -41,8 +49,9 @@ fn main() -> Result<(), String> {
     }
 
     let elapsed_time = start_time.elapsed().as_secs_f64();
+    println!("Elapsed time: {}s", elapsed_time);
 
-    match compare_files("test_files/lorem_ipsum.txt", "test_files/decrypted.txt") {
+    match compare_files(input_file, decrypted_file) {
         Ok(true) => {
             println!("Test passed")
         }
@@ -54,8 +63,6 @@ fn main() -> Result<(), String> {
             std::process::exit(1);
         }
     }
-
-    println!("Elapsed time: {}s", elapsed_time);
 
     if std::env::var("LOCAL")
         .unwrap_or("false".to_string())
@@ -75,8 +82,8 @@ fn compare_files(file1: &str, file2: &str) -> std::io::Result<bool> {
     let mut reader1 = std::io::BufReader::new(file1);
     let mut reader2 = std::io::BufReader::new(file2);
 
-    let mut buffer1 = [0u8; BUFFER_SIZE];
-    let mut buffer2 = [0u8; BUFFER_SIZE];
+    let mut buffer1 = vec![0u8; BUFFER_SIZE];
+    let mut buffer2 = vec![0u8; BUFFER_SIZE];
 
     loop {
         let bytes_read1 = reader1.read(&mut buffer1)?;

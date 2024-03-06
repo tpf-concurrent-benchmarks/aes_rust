@@ -8,7 +8,7 @@ use crate::aes_block_cipher::Word;
 use crate::utils::Matrix;
 
 pub struct State {
-    pub data: Matrix<4, N_B>,
+    pub data: Matrix,
 }
 
 impl State {
@@ -19,7 +19,7 @@ impl State {
     }
 
     #[cfg(test)]
-    pub fn new_from_matrix(data: Matrix<4, N_B>) -> Self {
+    pub fn new_from_matrix(data: Matrix) -> Self {
         Self { data }
     }
 
@@ -150,7 +150,7 @@ impl State {
         });
     }
 
-    fn galois_mul(a: u8, b: u8) -> u8 {
+    pub fn galois_mul(a: u8, b: u8) -> u8 {
         let mut result = 0;
         let mut a = a;
         let mut b = b;

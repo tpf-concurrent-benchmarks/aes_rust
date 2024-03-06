@@ -1,10 +1,10 @@
-use std::io::Write;
+use std::io::{BufWriter, Write};
 
 pub struct ChunkWriter<T>
 where
     T: Write,
 {
-    output: T,
+    output: BufWriter<T>,
     remove_padding: bool,
 }
 
@@ -14,7 +14,7 @@ where
 {
     pub fn new(output: T, remove_padding: bool) -> Self {
         ChunkWriter {
-            output,
+            output: BufWriter::new(output),
             remove_padding,
         }
     }

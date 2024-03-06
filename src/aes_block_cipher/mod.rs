@@ -5,7 +5,7 @@ mod tests;
 
 mod aes_key;
 mod constants;
-mod state;
+pub mod state;
 
 use aes_key::AESKey;
 
@@ -67,36 +67,6 @@ impl AESBlockCipher {
                 .try_into()
                 .unwrap(),
         );
-
-        state.set_data_out(&mut data_out);
-
-        data_out
-    }
-
-    #[allow(dead_code)]
-    fn slow_inv_cipher_block(&self, data_in: &[u8; 4 * N_B]) -> [u8; 4 * N_B] {
-        let mut data_out = [0; 4 * N_B];
-        let mut state = State::new_from_data_in(data_in);
-
-        state.add_round_key(
-            &self.inv_expanded_key.data[(N_R * N_B)..((N_R + 1) * N_B)]
-                .try_into()
-                .unwrap(),
-        );
-
-        for round in (1..N_R).rev() {
-            state.inv_shift_rows();
-            state.inv_sub_bytes();
-            state.add_round_key(
-                &self.inv_expanded_key.data[(round * N_B)..((round + 1) * N_B)]
-                    .try_into()
-                    .unwrap(),
-            );
-            state.inv_mix_columns();
-        }
-        state.inv_shift_rows();
-        state.inv_sub_bytes();
-        state.add_round_key(&self.inv_expanded_key.data[0..N_B].try_into().unwrap());
 
         state.set_data_out(&mut data_out);
 

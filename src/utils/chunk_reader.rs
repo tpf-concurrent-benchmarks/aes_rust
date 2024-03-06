@@ -1,10 +1,10 @@
-use std::io::Read;
+use std::io::{BufReader, Read};
 
 pub struct ChunkReader<T>
 where
     T: Read,
 {
-    input: T,
+    input: BufReader<T>,
     chunk_size: usize,
     with_padding: bool,
 }
@@ -15,7 +15,7 @@ where
 {
     pub fn new(input: T, chunk_size: usize, with_padding: bool) -> Self {
         ChunkReader {
-            input,
+            input: BufReader::new(input),
             chunk_size,
             with_padding,
         }
