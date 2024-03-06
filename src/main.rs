@@ -10,14 +10,21 @@ use std::io::Read;
 
 const BUFFER_SIZE: usize = 100;
 
-fn main() {
+fn main() -> Result<(), String> {
+    let n_threads = std::env::var("N_THREADS")
+        .unwrap_or("1".to_string())
+        .parse()
+        .expect("Error while parsing N_THREADS");
+
+    println!("N_THREADS: {}", n_threads);
+
     let cipher_key: u128 = 0x2b7e151628aed2a6abf7158809cf4f3c;
 
-    let cipher = AESCipher::new(cipher_key);
+    let cipher = AESCipher::new(cipher_key, n_threads)?;
 
     let start_time = std::time::Instant::now();
 
-    match cipher.cipher_file("test_files/input.txt", "test_files/output.txt") {
+    match cipher.cipher_file("test_files/lorem_ipsum.txt", "test_files/output.txt") {
         Ok(_) => {}
         Err(e) => {
             println!("Error while encrypting file: {}", e);
@@ -35,7 +42,7 @@ fn main() {
 
     let elapsed_time = start_time.elapsed().as_secs_f64();
 
-    match compare_files("test_files/input.txt", "test_files/decrypted.txt") {
+    match compare_files("test_files/lorem_ipsum.txt", "test_files/decrypted.txt") {
         Ok(true) => {
             println!("Test passed")
         }
@@ -58,6 +65,7 @@ fn main() {
         let logger = StatsDMetricsLogger::new("graphite:8125", "aes_cipher");
         logger.gauge("completion_time", elapsed_time);
     }
+    Ok(())
 }
 
 fn compare_files(file1: &str, file2: &str) -> std::io::Result<bool> {
