@@ -93,44 +93,6 @@ impl State {
         }
     }
 
-    pub fn mix_columns(&mut self) {
-        for i in 0..N_B {
-            let col = self.data.get_col(i);
-            let new_col = [
-                Self::galois_mul(col[0], 2) ^ Self::galois_mul(col[1], 3) ^ col[2] ^ col[3],
-                col[0] ^ Self::galois_mul(col[1], 2) ^ Self::galois_mul(col[2], 3) ^ col[3],
-                col[0] ^ col[1] ^ Self::galois_mul(col[2], 2) ^ Self::galois_mul(col[3], 3),
-                Self::galois_mul(col[0], 3) ^ col[1] ^ col[2] ^ Self::galois_mul(col[3], 2),
-            ];
-            self.data.set_col(i, new_col);
-        }
-    }
-
-    pub fn inv_mix_columns(&mut self) {
-        for i in 0..N_B {
-            let col = self.data.get_col(i);
-            let new_col = [
-                Self::galois_mul(col[0], 14)
-                    ^ Self::galois_mul(col[1], 11)
-                    ^ Self::galois_mul(col[2], 13)
-                    ^ Self::galois_mul(col[3], 9),
-                Self::galois_mul(col[0], 9)
-                    ^ Self::galois_mul(col[1], 14)
-                    ^ Self::galois_mul(col[2], 11)
-                    ^ Self::galois_mul(col[3], 13),
-                Self::galois_mul(col[0], 13)
-                    ^ Self::galois_mul(col[1], 9)
-                    ^ Self::galois_mul(col[2], 14)
-                    ^ Self::galois_mul(col[3], 11),
-                Self::galois_mul(col[0], 11)
-                    ^ Self::galois_mul(col[1], 13)
-                    ^ Self::galois_mul(col[2], 9)
-                    ^ Self::galois_mul(col[3], 14),
-            ];
-            self.data.set_col(i, new_col);
-        }
-    }
-
     /*
     Transformation in the Cipher and Inverse Cipher in which a Round
     Key is added to the State using an XOR operation.
@@ -150,20 +112,54 @@ impl State {
         });
     }
 
-    pub fn galois_mul(a: u8, b: u8) -> u8 {
-        let mut result = 0;
-        let mut a = a;
-        let mut b = b;
-        while b != 0 {
-            if b & 1 != 0 {
-                result ^= a;
-            }
-            if a & 0x80 != 0 {
-                a = (a << 1) ^ 0x1b;
-            } else {
-                a <<= 1;
-            }
-            b >>= 1;
+    pub fn mix_columns(&mut self) {
+        for i in 0..N_B {
+            let mut col = self.data.get_col(i);
+            Self::mix_column(&mut col);
+            self.data.set_col(i, col);
+        }
+    }
+
+    pub fn inv_mix_columns(&mut self) {
+        for i in 0..N_B {
+            let mut col = self.data.get_col(i);
+            Self::inv_mix_column(&mut col);
+            self.data.set_col(i, col);
+        }
+    }
+
+    // Source: https://crypto.stackexchange.com/a/71206
+    fn mix_column(col: &mut [u8; 4]) {
+        let a = col[0];
+        let b = col[1];
+        let c = col[2];
+        let d = col[3];
+        col[0] = Self::galois_dobule((a ^ b) as i8) ^ b ^ c ^ d;
+        col[1] = Self::galois_dobule((b ^ c) as i8) ^ c ^ d ^ a;
+        col[2] = Self::galois_dobule((c ^ d) as i8) ^ d ^ a ^ b;
+        col[3] = Self::galois_dobule((d ^ a) as i8) ^ a ^ b ^ c;
+    }   
+
+    fn inv_mix_column(col: &mut [u8; 4]) {
+        let a = col[0];
+        let b = col[1];
+        let c = col[2];
+        let d = col[3];
+        let x = Self::galois_dobule((a ^ b ^ c ^ d) as i8);
+        let y = Self::galois_dobule((x ^ a ^ c) as i8);
+        let z = Self::galois_dobule((x ^ b ^ d) as i8);
+        col[0] = Self::galois_dobule((y ^ a ^ b) as i8) ^ b ^ c ^ d;
+        col[1] = Self::galois_dobule((z ^ b ^ c) as i8) ^ c ^ d ^ a;
+        col[2] = Self::galois_dobule((y ^ c ^ d) as i8) ^ d ^ a ^ b;
+        col[3] = Self::galois_dobule((z ^ d ^ a) as i8) ^ a ^ b ^ c;
+    }
+
+
+    #[inline]
+    fn galois_dobule(a: i8) -> u8 {
+        let mut result = (a << 1) as u8;
+        if a < 0 {
+            result ^= 0x1b;
         }
         result
     }
