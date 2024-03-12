@@ -38,9 +38,7 @@ impl AESBlockCipher {
 
     pub fn new_u128(cipher_key: u128) -> Self {
         let cipher_key_bytes = cipher_key.to_be_bytes();
-        let mut cipher_key = [0; 4 * N_B];
-        cipher_key.copy_from_slice(&cipher_key_bytes[0..4 * N_B]);
-        Self::new(cipher_key)
+        Self::new(cipher_key_bytes)
     }
 
     pub fn cipher_block(&self, data_in: &[u8; 4 * N_B]) -> [u8; 4 * N_B] {
