@@ -5,6 +5,13 @@ N_THREADS = 4
 init:
 	docker swarm init || true
 
+_common_folders:
+	mkdir -p configs/graphite
+	mkdir -p configs/grafana_config
+.PHONY: _common_folders
+
+setup: _common_folders
+
 build:
 	docker rmi aes_rust -f || true
 	docker build -t aes_rust .

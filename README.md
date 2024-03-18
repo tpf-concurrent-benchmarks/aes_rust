@@ -12,6 +12,14 @@ The project is containerized, so you don't need to have Rust installed on your m
 
 ## Usage
 
+### Setup
+
+Creates needed directories
+
+```bash
+make setup
+```
+
 ### Build
 
 Builds the image with the binary:
