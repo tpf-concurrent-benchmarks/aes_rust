@@ -5,6 +5,7 @@ pub struct Config {
     pub encrypted_file: Option<String>,
     pub decrypted_file: Option<String>,
     pub repeat: usize,
+    pub publish_metrics: bool
 }
 
 impl Config {
@@ -21,6 +22,7 @@ impl Config {
             .unwrap_or("1".to_string())
             .parse()
             .expect("Error while parsing REPEAT");
+        let publish_metrics = std::env::var("LOCAL").unwrap_or("false".to_string()).as_str() == "true";
 
         Config {
             n_threads,
@@ -28,6 +30,7 @@ impl Config {
             encrypted_file,
             decrypted_file,
             repeat,
+            publish_metrics
         }
     }
 }

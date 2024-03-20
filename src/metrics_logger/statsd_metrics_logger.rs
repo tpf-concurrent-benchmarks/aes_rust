@@ -16,6 +16,14 @@ impl StatsDMetricsLogger {
     }
 }
 
+impl Default for StatsDMetricsLogger {
+    fn default() -> Self {
+        let host = "graphite:8125";
+        let prefix = "aes_cipher";
+        Self::new(host, prefix)
+    }
+}
+
 impl MetricsLogger for StatsDMetricsLogger {
     fn increment(&self, metric: &str) {
         self.statsd_client.incr(metric);
