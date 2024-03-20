@@ -77,8 +77,9 @@ services:
     deploy:
       restart_policy:
         condition: none
-    environment:
-      - N_THREADS=${N_THREADS}
+    volumes:
+      - "../.env:/opt/app/.env:ro"
+      - "..data:/opt/app/data:rw"
 
 volumes:
   grafana_config:
