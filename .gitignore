@@ -5,4 +5,6 @@ target
 
 graphite
 
-test_files
+data
+
+.env
