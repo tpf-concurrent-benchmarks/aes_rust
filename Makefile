@@ -1,24 +1,26 @@
-N_THREADS = 4
-
-.PHONY: init build remove deploy run _dev_build test
+.PHONY: init _common_folders _create_env setup build remove deploy dev_deploy run _tests_build test
 
 init:
 	docker swarm init || true
 
 _common_folders:
-	mkdir -p configs/graphite
-	mkdir -p configs/grafana_config
+	mkdir -p graphite
 .PHONY: _common_folders
 
-setup: _common_folders
+_create_env:
+	if [ ! -f .env ]; then \
+		cp .env.example .env; \
+	fi
+
+setup: _create_env _common_folders
 
 build:
 	docker rmi aes_rust -f || true
-	docker build -t aes_rust .
+	docker build -t aes_rust -f docker/Dockerfile .
 
 _dev_build:
 	docker rmi aes_rust_dev -f || true
-	docker build -t aes_rust_dev -f Dockerfile-dev .
+	docker build -t aes_rust_dev -f docker/Dockerfile-dev .
 
 remove:
 	if docker stack ls | grep -q aes_rust; then \
@@ -26,8 +28,7 @@ remove:
 	fi
 
 deploy: remove build
-	mkdir -p graphite
-	until N_THREADS=$(N_THREADS) \
+	until \
 	docker stack deploy \
 	-c docker/docker-compose.yaml \
 	aes_rust; \
@@ -35,8 +36,7 @@ deploy: remove build
 	done
 
 dev_deploy: remove _dev_build
-	mkdir -p graphite
-	until N_THREADS=$(N_THREADS) \
+	until \
 	docker stack deploy \
 	-c docker/docker-compose-dev.yaml \
 	aes_rust; \
@@ -44,10 +44,10 @@ dev_deploy: remove _dev_build
 	done
 
 run: build
-	docker run aes_rust
+	docker run -v "$(PWD)/.env:/opt/app/.env:ro" aes_rust
 
 _tests_build:
-	docker build -t aes_rust_dev -f Dockerfile-tests .
+	docker build -t aes_rust_dev -f docker/Dockerfile-tests .
 
 test: _tests_build
 	docker run aes_rust_dev
