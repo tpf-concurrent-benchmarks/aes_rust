@@ -2,6 +2,8 @@ pub mod aes_block_cipher;
 mod metrics_logger;
 mod utils;
 
+mod config;
+
 mod aes_cipher;
 
 use crate::aes_cipher::AESCipher;
@@ -11,16 +13,10 @@ use std::io::{Read, Write};
 const BUFFER_SIZE: usize = 10000000;
 
 fn main() -> Result<(), String> {
-    let n_threads = std::env::var("N_THREADS")
-        .unwrap_or("1".to_string())
-        .parse()
-        .expect("Error while parsing N_THREADS");
+    dotenv::dotenv().ok();
 
-    println!("N_THREADS: {}", n_threads);
-
-    let input_file = "test_files/lorem_ipsum.txt";
-    let output_file = "test_files/output.txt";
-    let decrypted_file = "test_files/decrypted.txt";
+    let config = config::Config::new_from_env();
+    println!("Starting program with the following configuration:\n{:?}", config);
 
     let cipher_key: u128 = 0x2b7e151628aed2a6abf7158809cf4f3c;
 
@@ -28,11 +24,11 @@ fn main() -> Result<(), String> {
 
     std::io::stdout().flush().unwrap();
 
-    let mut cipher = AESCipher::new(cipher_key, n_threads)?;
+    let mut cipher = AESCipher::new(cipher_key, config.n_threads)?;
 
     let start_time = std::time::Instant::now();
 
-    match cipher.cipher_file(input_file, output_file) {
+    match cipher.cipher_file(config.input_file.as_ref().unwrap(), config.encrypted_file.as_ref().unwrap()) {
         Ok(_) => {}
         Err(e) => {
             println!("Error while encrypting file: {}", e);
@@ -40,7 +36,7 @@ fn main() -> Result<(), String> {
         }
     }
 
-    match cipher.decipher_file(output_file, decrypted_file) {
+    match cipher.decipher_file(config.encrypted_file.as_ref().unwrap(), config.decrypted_file.as_ref().unwrap()) {
         Ok(_) => {}
         Err(e) => {
             println!("Error while decrypting file: {}", e);
@@ -51,7 +47,7 @@ fn main() -> Result<(), String> {
     let elapsed_time = start_time.elapsed().as_secs_f64();
     println!("Elapsed time: {}s", elapsed_time);
 
-    match compare_files(input_file, decrypted_file) {
+    match compare_files(config.input_file.as_ref().unwrap(), config.decrypted_file.as_ref().unwrap()) {
         Ok(true) => {
             println!("Test passed")
         }
