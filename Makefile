@@ -44,7 +44,7 @@ dev_deploy: remove _dev_build
 	done
 
 run: build
-	docker run -v "$(PWD)/.env:/opt/app/.env:ro" aes_rust
+	docker run -v "$(PWD)/.env:/opt/app/.env:ro" -v "$(PWD)/data:/opt/app/data" aes_rust
 
 _tests_build:
 	docker build -t aes_rust_dev -f docker/Dockerfile-tests .
