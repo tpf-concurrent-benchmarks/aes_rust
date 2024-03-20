@@ -19,7 +19,8 @@ where
         }
     }
 
-    /// Write the chunks to the output, removing any null padding.
+    /// Write the chunks to the output, removing any null padding if `remove_padding` is set to
+    /// `true`.
     /// Return `Ok(())` if the write operation is successful, or an error if it fails to write
     /// any of the chunks.
     pub fn write_chunks(&mut self, chunks: &[[u8; 16]]) -> std::io::Result<()> {
@@ -29,7 +30,8 @@ where
         Ok(())
     }
 
-    /// Write the chunk to the output, removing any null padding.
+    /// Write the chunk to the output, removing any null padding if `remove_padding` is set to
+    /// `true`.
     /// Return `Ok(())` if the write operation is successful, or an error if it fails to write
     /// the chunk.
     fn write_chunk(&mut self, chunk: &[u8; 16]) -> std::io::Result<()> {
