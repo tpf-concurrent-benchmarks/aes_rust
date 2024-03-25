@@ -79,7 +79,7 @@ services:
         condition: none
     volumes:
       - "../.env:/opt/app/.env:ro"
-      - "..data:/opt/app/data:rw"
+      - "../data:/opt/app/data:rw"
 
 volumes:
   grafana_config:
