@@ -12,7 +12,11 @@ _create_env:
 		cp .env.example .env; \
 	fi
 
-setup: _create_env _common_folders
+dummy_file:
+	mkdir -p data
+	echo "Hello World!" > data/input.txt
+
+setup: init _create_env _common_folders
 
 build:
 	docker rmi aes_rust -f || true
