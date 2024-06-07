@@ -9,7 +9,7 @@ mod aes_cipher;
 use crate::aes_cipher::AESCipher;
 use crate::metrics_logger::{MetricsLogger, StatsDMetricsLogger};
 
-const BUFFER_SIZE: usize = 10000000;
+const BUFFER_SIZE: usize = 8192;
 const COMPLETION_TIME_METRIC_NAME: &str = "completion_time";
 
 fn main() -> Result<(), String> {
